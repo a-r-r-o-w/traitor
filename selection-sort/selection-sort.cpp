@@ -25,30 +25,29 @@ struct LoopBasedFor {
 };
 
 template<size_t n>
-struct BubbleSort {
+struct SelectionSort {
   static constexpr auto sort(ArrayType auto const &list) {
     auto copy = list;
     sort_helper(copy);
     return copy;
   }
 
-  static constexpr void sort_helper(ArrayType auto &&list) {
-    LoopBasedFor<0, n - 1, 1>::compute([&] (int i) {
-      if (list[i] > list[i + 1])
-        std::swap(list[i], list[i + 1]);
+  template <size_t i>
+  static constexpr void find_min_and_swap(ArrayType auto &&list) {
+    int min = i;
+    LoopBasedFor<i + 1, n, 1>::compute([&] (int j) {
+      if (list[j] < list[min])
+        min = j;
     });
-    BubbleSort<n - 1>::sort_helper(std::forward<decltype(list)>(list));
+    std::swap(list[i], list[min]);
   }
-};
 
-template<>
-struct BubbleSort<0> {
-  static constexpr auto sort(ArrayType auto &) {
-    return;
-  }
-  
-  static constexpr void sort_helper(ArrayType auto&&) {
-    return;
+  template <size_t index = 0>
+  static constexpr void sort_helper(ArrayType auto &&list) {
+    if constexpr (index < n - 1) {
+      find_min_and_swap<index>(std::forward<decltype(list)>(list));
+      sort_helper<index + 1>(std::forward<decltype(list)>(list));
+    }
   }
 };
 
@@ -61,14 +60,24 @@ constexpr std::array<int, N> generate_data() {
   return v;
 }
 
-static constexpr auto data = generate_data();
+void normal_selection_sort(ArrayType auto &list) {
+  for (int i = 0; i < N - 1; ++i) {
+    int min = i;
+    for (int j = i + 1; j < N; ++j)
+      if (list[j] < list[min])
+        min = j;
+    std::swap(list[i], list[min]);
+  }
+}
 
 int main() {
+  constexpr auto data = generate_data();
+  
   for (int i: data)
     std::cout << i << ' ';
   std::cout << '\n';
   
-  constexpr auto result = BubbleSort<N>::sort(data);
+  constexpr auto result = SelectionSort<N>::sort(data);
   constexpr auto expected = [] () {
     std::array<int, N> v;
     for (int i = 0; i < N; ++i)

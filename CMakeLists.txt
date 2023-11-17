@@ -21,10 +21,10 @@ endif()
 
 # Debug build compile flags
 #   - remove "-fsanitize=address,undefined" if you do not have [ASan](https://github.com/google/sanitizers/wiki/AddressSanitizer) installed
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Wall -Wextra -g -DDEBUG_MODE -D_GLIBCXX_DEBUG -fsanitize=address,undefined -ftemplate-depth=100000")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Wall -Wextra -g -DDEBUG_MODE -D_GLIBCXX_DEBUG -fsanitize=address,undefined -ftemplate-depth=100000000  -fconstexpr-depth=100000000 -fconstexpr-ops-limit=100000000")
 
 # Release build compile flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -Wall -Wextra -O3 -ftemplate-depth=100000")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -Wall -Wextra -O3 -ftemplate-depth=100000000 -fconstexpr-depth=100000000 -fconstexpr-ops-limit=100000000")
 
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "CXX Flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
@@ -33,3 +33,7 @@ add_subdirectory(./bubble-sort)
 add_subdirectory(./factorial)
 add_subdirectory(./fibonacci)
 add_subdirectory(./for)
+add_subdirectory(./gcd)
+add_subdirectory(./insertion-sort)
+add_subdirectory(./odd-template-params)
+add_subdirectory(./selection-sort)

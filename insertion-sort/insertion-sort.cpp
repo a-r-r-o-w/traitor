@@ -12,7 +12,7 @@ concept ArrayType = requires(T t) {
 template<int i, int j, int jump>
 struct LoopBasedFor {
   static_assert(jump != 0);
-  
+
   template<ForBody F>
   static constexpr void compute(F &&f) {
     if constexpr (jump > 0)
@@ -25,34 +25,31 @@ struct LoopBasedFor {
 };
 
 template<size_t n>
-struct BubbleSort {
+struct InsertionSort {
   static constexpr auto sort(ArrayType auto const &list) {
     auto copy = list;
     sort_helper(copy);
     return copy;
   }
 
+  template<size_t index = 1>
   static constexpr void sort_helper(ArrayType auto &&list) {
-    LoopBasedFor<0, n - 1, 1>::compute([&] (int i) {
-      if (list[i] > list[i + 1])
-        std::swap(list[i], list[i + 1]);
-    });
-    BubbleSort<n - 1>::sort_helper(std::forward<decltype(list)>(list));
+    if constexpr (index < n) {
+      int key = list[index];
+      int j = index - 1;
+      LoopBasedFor<index - 1, -1, -1>::compute([&](int) {
+        if (j >= 0 && list[j] > key) {
+          list[j + 1] = list[j];
+          --j;
+        }
+      });
+      list[j + 1] = key;
+      sort_helper<index + 1>(std::forward<decltype(list)>(list));
+    }
   }
 };
 
-template<>
-struct BubbleSort<0> {
-  static constexpr auto sort(ArrayType auto &) {
-    return;
-  }
-  
-  static constexpr void sort_helper(ArrayType auto&&) {
-    return;
-  }
-};
-
-const int N = 128;
+constexpr int N = 128;
 
 constexpr std::array<int, N> generate_data() {
   std::array<int, N> v;
@@ -61,24 +58,24 @@ constexpr std::array<int, N> generate_data() {
   return v;
 }
 
-static constexpr auto data = generate_data();
-
 int main() {
-  for (int i: data)
+  constexpr auto data = generate_data();
+
+  for (int i : data)
     std::cout << i << ' ';
   std::cout << '\n';
-  
-  constexpr auto result = BubbleSort<N>::sort(data);
-  constexpr auto expected = [] () {
+
+  constexpr auto result = InsertionSort<N>::sort(data);
+  constexpr auto expected = []() {
     std::array<int, N> v;
     for (int i = 0; i < N; ++i)
       v[i] = i + 1;
     return v;
-  } ();
+  }();
   static_assert(result == expected);
-  
-  for (int i: result)
+
+  for (int i : result)
     std::cout << i << ' ';
-  
+
   return 0;
 }
